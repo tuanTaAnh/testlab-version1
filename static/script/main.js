@@ -25540,8 +25540,8 @@ and limitations under the License.
 //            console.log("addNote: ", t);
 //            console.log("addNote typeof: ", typeof(t) );
             try {
-                var e = this.indexToPitch(t.y)
-                  , n = this.midiTrack.add(t.x, e);
+                var e = this.indexToPitch(t.y);
+                var n = this.midiTrack.add(t.x, e);
                 return this.emit("add", e),
                 !!n
             } catch (e) {
@@ -27958,12 +27958,12 @@ and limitations under the License.
                 var resetP = (new p).toJSON();
                 resetP.bears = infor.beats;
                 resetP.bars = infor.bars;
-                console.log("resetP", typeof(resetP));
-                console.log("resetP", infor.random);
+                console.log("resetP", infor);
                 t.preventDefault(),
                 this.emit("stop"),
                 this.emit("restart"),
                 this.emit("settings-update", JSON.stringify(resetP), !0),
+                this.emit("drumnotes"),
                 this.emit("random"),
                 Ti({
                     eventCategory: "bottom",
@@ -28346,7 +28346,7 @@ and limitations under the License.
             this.selector.on("outofbounds", ()=>this.onSelectorOutOfBounds()),
             this.selector.on("add", t=>{
                 console.log("selector  t: ",t);
-                this.onAddNote(t)
+                this.onAddNote(t, true)
            }),
             this.selector.on("toggle", t=>this.onSelectorToggle(t)),
             this.selector.on("delete", (function(e) {
@@ -28393,7 +28393,7 @@ and limitations under the License.
             )),
             i.on("add", (function() {
 //                console.log("i.on.add", arguments);
-                return e.onAddNote(...arguments)
+                return e.onAddNote(...arguments, true)
             }
             )),
             i.on("remove", (function() {
@@ -28451,7 +28451,7 @@ and limitations under the License.
         }
         onSelectorToggle(t) {
             var {instrument: e, pos: n} = this.indexToInstrument(t);
-            e.has(n) ? this.onRemoveNote(t) : this.onAddNote(t)
+            e.has(n) ? this.onRemoveNote(t) : this.onAddNote(t, true)
         }
         onSelectorDelete(t) {
             for (var e = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : {}, n = 0; n < this.selector.rows; n++)
@@ -28465,8 +28465,13 @@ and limitations under the License.
             e(n.has(i)),
             this.selector.hide()
         }
-        onAddNote(t) {
-//            console.log("t: ", t);
+        onAddNote(t, ifadd) {
+            if(t.y < 2 && ifadd == true)
+            {
+                drumtrack.add(t.x,t.y);
+                console.log("t.x: ", t.x);
+                console.log("t.y: ", t.y);
+            }
             var {instrument: e, pos: n} = this.indexToInstrument(t);
 //            console.log("onAddNote");
 //            console.log("n: ", n);
@@ -28673,6 +28678,25 @@ and limitations under the License.
         ur.triggerSettingsModal(Ki)
     }
     ),
+    hr.on("settings", ()=>{
+        console.log("Ki: ",Ki);
+        ur.triggerSettingsModal(Ki)
+    }
+    ),
+    hr.on("drumnotes", ()=>{
+        console.log("drumnotes: ",drumtrack.length());
+        for(var i = 0; i < drumtrack.length();i++)
+        {
+            console.log("drumnotes ", i , " : ",drumtrack.getnote(i) );
+            console.log("drumnotes: ",drumtrack.length());
+            var note = drumtrack.getnote(i);
+            var cell = {x:note.x, y:note.y};
+            rr.onAddNote(cell, false);
+                if(i == 100) break;
+        }
+
+    }
+    ),
     hr.on("random", ()=>{
 //        var e = document.getElementById("settings-modal").querySelectorAll(".quantity");
         console.log("RANDOM EMIT");
@@ -28700,8 +28724,8 @@ and limitations under the License.
             {
                 count++;
                 var cell = {x:xCell, y:yCell};
-                rr.onAddNote(cell);
-                console.log("xCell: ", xCell, " yCell: ", yCell, " count: ", count);
+                rr.onAddNote(cell, true);
+//                console.log("xCell: ", xCell, " yCell: ", yCell, " count: ", count);
 //                console.log("YES");
             }
 
@@ -28865,9 +28889,37 @@ and limitations under the License.
     }
     );
 
-    var infor = Ki;
+    class ChossenDrumNotes{
+        constructor()
+        {
+            this.notes = [];
+        }
+
+        add(x, y)
+        {
+            this.notes.push({
+                x: x,
+                y: y,
+            });
+        }
+
+
+        length()
+        {
+            return this.notes.length;
+        }
+
+        getnote(i)
+        {
+            return this.notes[i];
+        }
+    }
+
+    var infor = new p;
+    infor = Ki;
     console.log("infor: ", infor);
 
+    var drumtrack = new ChossenDrumNotes;
 
 }
 ]);
