@@ -24786,6 +24786,10 @@ and limitations under the License.
             if (isNaN(e) || void 0 === e)
                 throw new Error("note is note defined");
             if (!this.has(t, e)) {
+                if(n == 1)
+                {
+                    n = Math.floor(Math.random() * 3) + 1;
+                }
                 var s = {
                     time: t,
                     note: e,
@@ -25164,7 +25168,7 @@ and limitations under the License.
             this.track = e,
             console.log("Constructor");
             r || (this.track.on("add", t=>{
-//                console.log("Constructor t: ", t);
+                console.log("note : ", t);
                 this.addNoteVN(t);
             }),
             this.track.on("remove", t=>this.removeNote(t)),
